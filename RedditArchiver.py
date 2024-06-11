@@ -259,7 +259,7 @@ def myprint(message, color, stderr=False):
 
 # Config loading
 try:
-    with open('config.yml') as f:
+    with open(os.path.join(os.path.dirname(__file__), 'config.yml')) as f:
         config = yaml.safe_load(f)
 except:
     myprint(f"[x] Cannot load config file. Make sure it exists and the syntax is correct.", 9, True)
