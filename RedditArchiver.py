@@ -257,10 +257,7 @@ def myprint(message, color, stderr=False):
         print(f"{colored.fg(color)}{message}{colored.attr(0)}")
 
 
-# -------------------------- #
-# Config loading             #
-# -------------------------- #
-
+# Config loading
 try:
     with open('config.yml') as f:
         config = yaml.safe_load(f)
@@ -268,26 +265,22 @@ except:
     myprint(f"[x] Cannot load config file. Make sure it exists and the syntax is correct.", 9, True)
     raise SystemExit(1)
 
-
-# -------------------------- #
-# Main function              #
-# -------------------------- #
-
+# Test connection
 try:
-    now = datetime.datetime.now(datetime.timezone.utc)
-    now_str = now.strftime(config["defaults"]["dateformat"])
+    reddit = connect()
+except:
+    myprint(f"[x] It looks like you are not authenticated well.", 9, True)
+    myprint(f"[x] Please check your credentials and retry.", 9, True)
+    raise SystemExit(1)
 
-    # Test connection
-    try:
-        reddit = connect()
-    except:
-        myprint(f"[x] It looks like you are not authenticated well.", 9, True)
-        myprint(f"[x] Please check your credentials and retry.", 9, True)
-        raise SystemExit(1)
+now = datetime.datetime.now(datetime.timezone.utc)
+now_str = now.strftime(config["defaults"]["dateformat"])
 
-    submission_id = None
 
-    url = input("Enter URL: ")
+def scrape_url(url):
+    """
+    Scrape a single Reddit thread
+    """
 
     submission_id = extract_id(url)
     if submission_id is None:
@@ -319,23 +312,31 @@ try:
         else:
             break
 
-    myprint(f"[+] Submission structured.", 8)
+    return html, submission
 
-    # Saving to disk
-    os.makedirs("downloads", exist_ok=True)
 
+def main():
     try:
-        filename = write_file(html, submission, now, "downloads")
-    except PermissionError as e:
-        myprint(f"[x] Could not write file because of bad permissions.", 9, True)
-        raise SystemExit(1)
+        url = input("Enter URL: ")
+        html, submission = scrape_url(url)    
+
+        myprint(f"[+] Submission structured.", 8)
+
+        # Saving to disk
+        os.makedirs("downloads", exist_ok=True)
+
+        try:
+            filename = write_file(html, submission, now, "downloads")
+        except PermissionError as e:
+            myprint(f"[x] Could not write file because of bad permissions.", 9, True)
+            raise SystemExit(1)
+        except Exception as e:
+            myprint(f"[x] Uncaught problem when writing the file: {e}", 9, True)
+            raise SystemExit(1)
+
+        myprint(f"[=] Submission saved! Filename: {filename}", 10)
+
     except Exception as e:
-        myprint(f"[x] Uncaught problem when writing the file: {e}", 9, True)
-        raise SystemExit(1)
-
-    myprint(f"[=] Submission saved! Filename: {filename}", 10)
-
-except Exception as e:
-    # general catch
-    myprint(f"[x] Uncaught problem: {e}", 9, True)
-    raise
+        # general catch
+        myprint(f"[x] Uncaught problem: {e}", 9, True)
+        raise
