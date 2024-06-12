@@ -1,6 +1,5 @@
 # 3rd party modules
 from anytree import Node, PreOrderIter
-from bs4 import BeautifulSoup as bs
 import praw, prawcore, markdown2, yaml, colored
 
 # stdlib
@@ -218,13 +217,9 @@ def generate_html(submission, submission_id, now_str, sort, comments_index, comm
 
     # Merging this all together
     html_total = html_head+html_submission+html_firstpost+html_comments
-
-    # Beautify the HTML
     html_total = html_total.replace('<p>', '').replace('</p>', '')
-    soup = bs(html_total, 'html.parser')
-    pretty_html = soup.prettify()
 
-    return pretty_html
+    return html_total
 
 
 def write_file(content, submission, now, output_directory):
