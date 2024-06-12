@@ -220,8 +220,7 @@ def generate_html(submission, submission_id, now_str, sort, comments_index, comm
     html_total = html_head+html_submission+html_firstpost+html_comments
 
     # Beautify the HTML
-    while '<p></p>' in html_total:
-        html_total = html_total.replace('<p></p>', '')
+    html_total = html_total.replace('<p>', '').replace('</p>', '')
     soup = bs(html_total, 'html.parser')
     pretty_html = soup.prettify()
 
